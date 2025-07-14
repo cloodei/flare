@@ -1,48 +1,68 @@
+import { Suspense, lazy } from "react"
+import { Home, Settings } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import ControlCard from "@/components/dashboard/ControlCard"
-import DashboardGrid from "@/components/dashboard/DashboardGrid"
-import DeviceStatusCard from "@/components/dashboard/DeviceStatusCard"
-import MonitoringView from "@/components/dashboard/MonitoringView"
+import Header from "@/components/Header"
+import AlertsPanel from "@/components/dashboard/alerts-panel"
+import RoomMonitoringGrid from "@/components/dashboard/room-monitoring-grid"
+import MonitoringView from "@/components/dashboard/monitoring-view"
 
-const mockDevices = [
-  { name: "temp_humidity_sensor", isOnline: true },
-  { name: "main_light_relay", isOnline: true },
-  { name: "desk_fan_relay", isOnline: false },
-  { name: "motion_sensor_living_room", isOnline: true },
-]
+const ModernDashboardGrid = lazy(() => import("@/components/dashboard/dashboard-grid"))
 
 export default function Dashboard() {
   return (
-    <Tabs defaultValue="monitoring">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold">Giám sát hệ thống</h1>
-          <p className="text-muted-foreground">
-            Theo dõi và điều khiển hệ thống nhà thông minh của bạn
-          </p>
-        </div>
-        <TabsList>
-          <TabsTrigger value="monitoring">Giám sát</TabsTrigger>
-          <TabsTrigger value="devices">Thiết bị</TabsTrigger>
-        </TabsList>
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      <div className="container mx-auto px-4 py-8 space-y-8 relative">
+        <Tabs defaultValue="monitoring" className="space-y-8">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-foreground">Smart Home Dashboard</h1>
+              <p className="text-muted-foreground">Monitor and control your connected devices</p>
+            </div>
+
+            <TabsList className="max-sm:w-full">
+              <TabsTrigger value="monitoring" className="cursor-pointer">
+                <Home className="size-4 mr-2" />
+                Monitoring
+              </TabsTrigger>
+              <TabsTrigger value="devices" className="cursor-pointer">
+                <Settings className="size-4 mr-2" />
+                Devices
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="monitoring" className="space-y-8">
+            <MonitoringView />
+            <RoomMonitoringGrid />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <MonitoringView />
+              </div>
+              <AlertsPanel />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="devices" className="space-y-8">
+            <Suspense fallback={<DevicesSkeleton />}>
+              <ModernDashboardGrid />
+            </Suspense>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <TabsContent value="monitoring">
-        <MonitoringView />
-      </TabsContent>
-
-      <TabsContent value="devices">
-        <DashboardGrid>
-          <ControlCard
-            deviceName="Đèn chính"
-            description="Kính phòng khách"
-            initialState={true}
-          />
-          <ControlCard deviceName="Đèn bàn" description="Văn phòng" />
-          <DeviceStatusCard devices={mockDevices} />
-        </DashboardGrid>
-      </TabsContent>
-    </Tabs>
+    </div>
   )
 }
 
+function DevicesSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <Skeleton className="h-[200px]" />
+      <Skeleton className="h-[200px]" />
+      <Skeleton className="h-[200px]" />
+    </div>
+  );
+}

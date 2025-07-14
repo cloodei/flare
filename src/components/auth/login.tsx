@@ -1,8 +1,10 @@
-import { useForm } from "react-hook-form";
 import { LogIn } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Link } from "react-router";
+import { fetchWithAuth } from "@/lib/api";
+import { useAuthActions, type User } from "@/stores/auth-store";
 
 interface LoginFormData {
   username: string;
@@ -10,14 +12,46 @@ interface LoginFormData {
 }
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuthActions();
   const {
     handleSubmit,
     register,
-    formState: { isSubmitting, errors }
+    formState: { isSubmitting, errors },
+    setError
   } = useForm<LoginFormData>();
 
-  function onSubmit(data: LoginFormData) {
-    console.log(data);
+  async function onSubmit(data: LoginFormData) {
+    try {
+      const response = await fetchWithAuth("/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        const message = result.message || "Tên đăng nhập hoặc mật khẩu không chính xác";
+        setError("username", { type: "manual", message });
+        setError("password", { type: "manual", message });
+        
+        return;
+      }
+
+      const { access_token, user }: { access_token: string; user: User } = result;
+      login(user, access_token);
+      navigate("/");
+    }
+    catch (error) {
+      console.error("Login failed:", error);
+      setError("root.serverError", {
+        type: "manual",
+        message: "Đã xảy ra lỗi. Vui lòng thử lại.",
+      });
+    }
   }
 
   return (
@@ -33,24 +67,12 @@ export default function Login() {
           autoComplete="username"
           type="text"
           placeholder="Tên đăng nhập"
-          {...register("username", {
-              required: "Tên đăng nhập không được để trống",
-              minLength: {
-                value: 3,
-                message: "Tên đăng nhập phải có ít nhất 3 ký tự"
-              },
-              maxLength: {
-                value: 20,
-                message: "Tên đăng nhập phải có tối đa 20 ký tự"
-              }
-            }
-          )}
+          {...register("username")}
           aria-invalid={!!errors.username?.message}
           className="max-sm:text-sm h-[38px] sm:h-10 max-sm:placeholder:text-sm"
-          style={{ marginBottom: "0px" }}
         />
         {errors.username?.message && (
-          <p className="text-red-500 dark:text-red-500/90 text-sm pl-2">
+          <p className="text-red-500 dark:text-red-500/90 text-sm pl-2 pt-1">
             {errors.username?.message}
           </p>
         )}
@@ -58,29 +80,23 @@ export default function Login() {
         <Input
           type="password"
           placeholder="Mật khẩu"
-          {...register("password", {
-              required: "Mật khẩu không được để trống",
-              minLength: {
-                value: 3,
-                message: "Mật khẩu phải có ít nhất 3 ký tự"
-              },
-              maxLength: {
-                value: 20,
-                message: "Mật khẩu phải có tối đa 20 ký tự"
-              }
-            }
-          )}
+          {...register("password")}
           aria-invalid={!!errors.password?.message}
-          className="max-sm:text-sm h-[38px] sm:h-10 max-sm:placeholder:text-sm mt-3.5"
-          style={{ marginBottom: "0px" }}
-          autoComplete="password"
+          className="max-sm:text-sm h-[38px] sm:h-10 max-sm:placeholder:text-sm"
+          autoComplete="current-password"
         />
         {errors.password?.message && (
-          <p className="text-red-500 dark:text-red-500/90 text-sm pl-2">
+          <p className="text-red-500 dark:text-red-500/90 text-sm pl-2 pt-1">
             {errors.password?.message}
           </p>
         )}
       </div>
+
+      {errors.root?.serverError && (
+        <p className="text-red-500 dark:text-red-500/90 text-sm pl-2 pt-1">
+          {errors.root?.serverError?.message}
+        </p>
+      )}
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
         {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
@@ -88,7 +104,7 @@ export default function Login() {
 
       <div className="text-center">
         <Link
-          to={isSubmitting ? "#" : "/login?tab=signup"}
+          to={isSubmitting ? "#" : "/auth?tab=signup"}
           className="text-sm text-gray-500 hover:text-gray-700 dark:text-[#a1a1a1] dark:hover:text-white transition-colors"
         >
           Chưa có tài khoản? <span className="font-semibold">Đăng ký</span>
