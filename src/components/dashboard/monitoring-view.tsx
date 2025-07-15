@@ -119,6 +119,7 @@ export default function MonitoringView() {
         </div>
       )
     }
+
     return null
   }
 
@@ -250,12 +251,9 @@ export default function MonitoringView() {
               <p className="text-sm text-muted-foreground">Last 24 hours</p>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <AnimatedNumber
-              value={todayStats.avgTemp}
-              className="text-4xl font-bold bg-gradient-to-br from-chart-2 to-chart-1 bg-clip-text text-transparent"
-              suffix="°C"
-            />
+
+          <div className="text-4xl font-bold bg-gradient-to-br from-chart-2 to-chart-1 bg-clip-text text-transparent">
+            {todayStats.avgTemp.toFixed(1)}°C
           </div>
         </Card>
 
@@ -269,12 +267,9 @@ export default function MonitoringView() {
               <p className="text-sm text-muted-foreground">Last 24 hours</p>
             </div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <AnimatedNumber
-              value={todayStats.avgHumidity}
-              className="text-4xl font-bold bg-gradient-to-br from-chart-3 to-chart-4 bg-clip-text text-transparent"
-              suffix="%"
-            />
+
+          <div className="text-4xl font-bold bg-gradient-to-br from-chart-3 to-chart-4 bg-clip-text text-transparent">
+            {todayStats.avgHumidity.toFixed(1)}%
           </div>
         </Card>
       </div>

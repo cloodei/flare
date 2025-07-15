@@ -4,7 +4,7 @@ import { User as UserIcon } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { PasswordInput } from "../ui/password-input";
-import { fetchWithAuth } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api";
 import { useAuthActions, type User } from "@/stores/auth-store";
 
 interface SignupFormData {
@@ -26,7 +26,7 @@ export default function Signup() {
 
   async function onSubmit(data: SignupFormData) {
     try {
-      const response = await fetchWithAuth("/signup", {
+      const response = await fetch(`${API_BASE_URL}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,16 +34,14 @@ export default function Signup() {
         body: JSON.stringify({ username: data.username, password: data.password }),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        const message = result.message || "Không thể tạo tài khoản.";
+        const message = response.status === 409 ? "Tên đăng nhập đã tồn tại" : "Không thể tạo tài khoản.";
         setError("username", { type: "manual", message });
         
         return;
       }
 
-      const { access_token, user }: { access_token: string; user: User } = result;
+      const { access_token, user } = await response.json();
       login(user, access_token);
       navigate("/");
     }

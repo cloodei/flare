@@ -1,9 +1,9 @@
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Wifi, WifiOff } from "lucide-react";
-import { useAuthActions } from "@/stores/auth-store";
 import { Button } from "./ui/button";
-import { fetchWithAuth } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api";
+import { useAuthActions } from "@/stores/auth-store";
 import ModeToggle from "./mode-toggle";
 
 export default function Header() {
@@ -13,7 +13,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetchWithAuth("/logout", { method: "POST" });
+      await fetch(`${API_BASE_URL}/logout`, { method: "POST" });
     }
     catch (error) {
       console.error("Logout failed:", error);

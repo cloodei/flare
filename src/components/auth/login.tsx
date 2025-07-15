@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { fetchWithAuth } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api";
 import { useAuthActions, type User } from "@/stores/auth-store";
 
 interface LoginFormData {
@@ -23,7 +23,7 @@ export default function Login() {
 
   async function onSubmit(data: LoginFormData) {
     try {
-      const response = await fetchWithAuth("/login", {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,17 +31,18 @@ export default function Login() {
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        const message = result.message || "Tên đăng nhập hoặc mật khẩu không chính xác";
-        setError("username", { type: "manual", message });
-        setError("password", { type: "manual", message });
+        if (response.status === 404)
+          setError("username", { type: "manual", message: "Tên đăng nhập không tồn tại" });
+        else if (response.status === 400)
+          setError("password", { type: "manual", message: "Mật khẩu không chính xác" });
+        else
+          setError("root.serverError", { type: "manual", message: "Đã xảy ra lỗi. Vui lòng thử lại." });
         
         return;
       }
 
-      const { access_token, user }: { access_token: string; user: User } = result;
+      const { access_token, user } = await response.json();
       login(user, access_token);
       navigate("/");
     }

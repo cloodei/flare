@@ -5,12 +5,11 @@ interface User {
   username: string;
 }
 interface AuthActions {
-  setUser: (user: User | null) => void;
-  setAccessToken: (accessToken: string | null) => void;
+  setUser: (user: User) => void;
+  setAccessToken: (accessToken: string) => void;
   login: (user: User, accessToken: string) => void;
   logout: () => void;
 }
-
 interface AuthState {
   user: User | null;
   accessToken: string | null;
@@ -21,11 +20,25 @@ const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   accessToken: null,
   actions: {
-    setUser: (user) => set({ user }),
-    setAccessToken: (accessToken) => set({ accessToken }),
-    login: (user, accessToken) => set({ user, accessToken }),
-    logout: () => set({ user: null, accessToken: null }),
-  },
+    setUser: (user) => {
+      set({ user });
+      localStorage.setItem("user", JSON.stringify(user));
+    },
+    setAccessToken: (accessToken) => {
+      set({ accessToken });
+      localStorage.setItem("access_token", accessToken);
+    },
+    login: (user, accessToken) => {
+      set({ user, accessToken });
+      localStorage.setItem("access_token", accessToken);
+      localStorage.setItem("user", JSON.stringify(user));
+    },
+    logout: () => {
+      set({ user: null, accessToken: null });
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+    }
+  }
 }));
 
 const useUser        = () => useAuthStore(state => state.user);
