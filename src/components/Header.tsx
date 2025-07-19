@@ -1,15 +1,15 @@
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Wifi, WifiOff } from "lucide-react";
-import { Button } from "./ui/button";
+import { usePiOnline } from "@/stores/controls-store";
 import { API_BASE_URL } from "@/lib/api";
 import { useAuthActions } from "@/stores/auth-store";
 import ModeToggle from "./mode-toggle";
 
 export default function Header() {
-  const actions = useAuthActions();
+  const { logout } = useAuthActions();
   const navigate = useNavigate();
-  const systemOnline = true; // This should be replaced with real-time data
+  const systemOnline = usePiOnline();
 
   const handleLogout = async () => {
     try {
@@ -19,7 +19,7 @@ export default function Header() {
       console.error("Logout failed:", error);
     }
     finally {
-      actions.logout();
+      logout();
       navigate("/auth");
     }
   };
@@ -27,14 +27,10 @@ export default function Header() {
   return (
     <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] sm:w-[400px] max-w-4xl z-50">
       <div className="bg-card/50 backdrop-blur-xl border rounded-full w-full h-[42px] flex items-center justify-between px-4 shadow-md">
-        <Button
-          variant="ghost"
+        <LogOut
+          className="ml-1.5 size-4 cursor-pointer transition-colors duration-200 dark:hover:text-rose-400 hover:text-rose-500"
           onClick={handleLogout}
-          className="w-full justify-start mt-2"
-        >
-          <LogOut className="mr-2 size-4" />
-          Logout
-        </Button>
+        />
 
         <div className="flex items-center gap-4">
           <motion.div

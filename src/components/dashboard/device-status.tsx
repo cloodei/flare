@@ -1,18 +1,17 @@
 import { motion } from "motion/react"
 import { Wifi, WifiOff, Activity } from "lucide-react"
-import { GradientCard } from "@/components/ui/gradient-card"
+import { Card } from "../ui/card"
 
 interface Device {
   name: string
   isOnline: boolean
-  lastSeen?: string
 }
 
 export default function DeviceStatus({ devices }: { devices: Device[] }) {
   const onlineCount = devices.filter((d) => d.isOnline).length
 
   return (
-    <GradientCard gradient="green" className="p-6 lg:col-span-2">
+    <Card className="p-6 lg:col-span-2">
       <div className="flex items-center gap-4 mb-6">
         <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600">
           <Activity className="size-6 text-white" />
@@ -54,7 +53,6 @@ export default function DeviceStatus({ devices }: { devices: Device[] }) {
                 <p className="font-medium text-foreground">
                   {device.name.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                 </p>
-                {device.lastSeen && <p className="text-xs text-muted-foreground">Last seen: {device.lastSeen}</p>}
               </div>
             </div>
 
@@ -77,6 +75,6 @@ export default function DeviceStatus({ devices }: { devices: Device[] }) {
           </motion.div>
         ))}
       </div>
-    </GradientCard>
+    </Card>
   )
 }

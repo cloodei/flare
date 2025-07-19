@@ -1,66 +1,31 @@
 import { motion } from "motion/react"
-import { Thermometer, Droplets, Eye, AlertTriangle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
-
-const roomData = [
-  {
-    name: "Living Room",
-    temperature: 24.5,
-    humidity: 62,
-    occupancy: true,
-    alerts: 0,
-  },
-  {
-    name: "Bedroom",
-    temperature: 22.1,
-    humidity: 58,
-    occupancy: false,
-    alerts: 1,
-  },
-  {
-    name: "Kitchen",
-    temperature: 26.3,
-    humidity: 45,
-    occupancy: true,
-    alerts: 0,
-  },
-  {
-    name: "Office",
-    temperature: 23.8,
-    humidity: 55,
-    occupancy: true,
-    alerts: 0,
-  },
-]
+import { Thermometer, Droplets } from "lucide-react"
+import { useRoom, useRoomActions, useRoomData } from "@/stores/room-store"
 
 export default function RoomMonitoringGrid() {
+  const currentRoom = useRoom();
+  const rooms = Object.entries(useRoomData()).map(([name, data]) => ({
+    name,
+    humidity: data.reduce((acc, item) => acc + item.humidity, 0) / data.length,
+    temperature: data.reduce((acc, item) => acc + item.temperature, 0) / data.length
+  }))
+  const { setRoom } = useRoomActions();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {roomData.map((room, index) => (
+      {rooms.map((room, index) => (
         <motion.div
           key={room.name}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1 }}
         >
-          <div className="p-4 relative bg-card backdrop-blur-xl border rounded-md shadow-md">
+          <div
+            className={`p-4 relative backdrop-blur-xl border rounded-md shadow-md cursor-pointer transition-all duration-300 ease-in-out ${room.name === currentRoom ? "bg-gradient-to-br from-sky-100/60 to-violet-200/65 dark:from-sky-900/40 dark:to-teal-950/50" : "bg-card"}`}
+            onClick={() => setRoom(room.name)}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">{room.name}</h3>
-              <div className="flex items-center gap-2">
-                {room.occupancy && (
-                  <Badge className="bg-green-600 hover:bg-green-600">
-                    <Eye className="size-3 mr-1" />
-                    Occupied
-                  </Badge>
-                )}
-                {room.alerts > 0 && (
-                  <Badge className="bg-red-600 hover:bg-red-600">
-                    <AlertTriangle className="size-3 mr-1" />
-                    {room.alerts}
-                  </Badge>
-                )}
-              </div>
             </div>
 
             <div className="space-y-1">
@@ -80,7 +45,7 @@ export default function RoomMonitoringGrid() {
                   <span className="text-sm text-accent-foreground">Humidity</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-lg font-semibold">{room.humidity}%</span>
+                  <span className="text-lg font-semibold">{room.humidity.toFixed(1)}%</span>
                 </div>
               </div>
             </div>

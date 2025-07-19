@@ -2,37 +2,53 @@ import { Power } from "lucide-react"
 import { motion } from "motion/react"
 import { useState } from "react"
 import { Switch } from "@/components/ui/switch"
-import { GradientCard } from "@/components/ui/gradient-card"
+import { Card } from "../ui/card"
 
 interface ControlCardProps {
+  id: number
   deviceName: string
   description: string
-  initialState?: boolean
+  publish: (topic: string, message: string, id: number) => void
+  initialState: boolean
+  color: "Red" | "Green" | "Yellow" | "RGB"
   icon?: React.ReactNode
-  gradient?: "blue" | "purple" | "green" | "orange" | "pink"
 }
 
 export default function ControlCard({
+  id,
   deviceName,
   description,
-  initialState = false,
+  initialState,
   icon,
-  gradient = "blue",
+  publish,
+  color
 }: ControlCardProps) {
   const [isOn, setIsOn] = useState(initialState)
 
+  const getColorScheme = () => {
+    switch (color) {
+      case "Red":
+        return "shadow-red-500/25 from-rose-500 to-red-600"
+      case "Green":
+        return "shadow-green-500/25 from-green-500 to-emerald-600"
+      case "Yellow":
+        return "shadow-yellow-500/25 from-yellow-500 to-yellow-600"
+      case "RGB":
+        return "shadow-blue-500/25 from-rose-400 to-blue-600"
+    }
+  }
+
   const handleToggle = (checked: boolean) => {
     setIsOn(checked)
+    publish("client/led", `${id}|${checked ? "1" : "0"}`, id)
   }
 
   return (
-    <GradientCard gradient={gradient} className="p-6">
+    <Card className="p-6">
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
           <motion.div
-            className={`p-3 rounded-xl transition-all duration-300 ${
-              isOn ? "bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/25" : "bg-white/10"
-            }`}
+            className={`p-3 rounded-xl transition-all duration-300 ${isOn ? "bg-gradient-to-br shadow-md " + getColorScheme() : "bg-gray-50/15"}`}
             animate={{
               scale: isOn ? [1, 1.1, 1] : 1,
             }}
@@ -40,6 +56,7 @@ export default function ControlCard({
           >
             {icon || <Power className={`size-5 ${isOn ? "text-white" : "text-muted-foreground"}`} />}
           </motion.div>
+
           <div>
             <h3 className="font-semibold text-foreground">{deviceName}</h3>
             <p className="text-sm text-muted-foreground">{description}</p>
@@ -68,6 +85,6 @@ export default function ControlCard({
 
         <Switch onCheckedChange={handleToggle} checked={isOn} />
       </div>
-    </GradientCard>
+    </Card>
   )
 }

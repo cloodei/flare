@@ -7,6 +7,7 @@ interface User {
 interface AuthActions {
   setUser: (user: User) => void;
   setAccessToken: (accessToken: string) => void;
+  setAuth: (user: User, accessToken: string) => void;
   login: (user: User, accessToken: string) => void;
   logout: () => void;
 }
@@ -20,14 +21,10 @@ const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   accessToken: null,
   actions: {
-    setUser: (user) => {
-      set({ user });
-      localStorage.setItem("user", JSON.stringify(user));
-    },
-    setAccessToken: (accessToken) => {
-      set({ accessToken });
-      localStorage.setItem("access_token", accessToken);
-    },
+    setUser: (user) => set({ user }),
+    setAccessToken: (accessToken) => set({ accessToken }),
+    setAuth: (user, accessToken) => set({ user, accessToken }),
+
     login: (user, accessToken) => {
       set({ user, accessToken });
       localStorage.setItem("access_token", accessToken);

@@ -7,24 +7,18 @@ import { Card } from "../ui/card"
 import { Button } from "../ui/button"
 import { DatePicker } from "../ui/date-picker"
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
-import { useAvgActions } from "@/stores/avg-store"
+import { useRoomData, useRoom } from "@/stores/room-store"
 
 const time = new Date()
 
-interface MonitoringViewProps {
-  data: {
-    time: Date;
-    temperature: number;
-    humidity: number;
-  }[];
-}
-export default function MonitoringView({ data }: MonitoringViewProps) {
+export default function RoomMonitoringView() {
+  const roomName = useRoom()
+  const data = useRoomData()[roomName]
   const [activeFilters, setActiveFilters] = useState({
     dataType: "both",
     timeRange: "7d"
   })
   const [dateRange, setDateRange] = useState<DateRange>()
-  const { setAvg, setTime } = useAvgActions()
 
   const { chartData, timeFormat } = useMemo(() => {
     let fromDate: Date | undefined, toDate: Date | undefined
@@ -61,7 +55,6 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
     if (dayDifference < 3) {
       const n = filteredData.length
       const chartData = new Array<{ time: string; temperature: number; humidity: number }>(n)
-      let avgTemp = 0, avgHumidity = 0
 
       for (let i = 0; i < n; ++i) {
         const item = filteredData[i]
@@ -70,15 +63,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
           temperature: item.temperature,
           humidity: item.humidity
         }
-
-        avgTemp += item.temperature
-        avgHumidity += item.humidity
       }
-
-      setAvg({
-        temperature: avgTemp / n || 0,
-        humidity: avgHumidity / n || 0
-      })
 
       return {
         chartData,
@@ -87,12 +72,9 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
     }
 
     const groupedByDay: { [key: string]: { temps: number[]; humids: number[]; count: number } } = {}, n = filteredData.length
-    let avgTemp = 0, avgHumidity = 0
 
     for (let i = 0; i < n; ++i) {
       const item = filteredData[i]
-      avgTemp += item.temperature
-      avgHumidity += item.humidity
 
       const day = item.time.toISOString().split("T")[0]
       if (!groupedByDay[day])
@@ -102,16 +84,11 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
       groupedByDay[day].humids.push(item.humidity)
     }
 
-    setAvg({
-      temperature: avgTemp / n || 0,
-      humidity: avgHumidity / n || 0
-    })
-
     const dailyData = Object.entries(groupedByDay)
       .map(([day, { temps, humids }]) => ({
         time: new Date(day).toLocaleDateString([], { month: "short", day: "numeric" }),
-        temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
-        humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
+        humidity: parseFloat(((humids.reduce((a, b) => a + b, 0) / humids.length) || 0).toFixed(1)),
+        temperature: parseFloat(((temps.reduce((a, b) => a + b, 0) / temps.length) || 0).toFixed(1))
       }))
       .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
@@ -175,7 +152,6 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
               onClick={() => {
                 setActiveFilters((prev) => ({ ...prev, timeRange: key }))
                 setDateRange({ from: undefined, to: undefined })
-                setTime(key)
               }}
             >
               <Icon className="size-4 mr-1" />
@@ -188,14 +164,15 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
               const from = value?.from, to = value?.to
               setActiveFilters((prev) => ({ ...prev, timeRange: "custom" }))
               setDateRange({ from, to })
-              setTime({ from, to })
             }}
           />
         </div>
       </div>
 
       {/* Chart */}
-      <Card className="p-4 pl-0 md:p-8 md:pl-0 md:pr-10">
+      <Card className="pt-2.5 pr-4 md:pt-3.5 md:pr-10">
+        <h2 className="pl-4 text-2xl font-semibold capitalize">{roomName}</h2>
+
         <ResponsiveContainer width="100%" height={400}>
           <AreaChart data={chartData}>
             <defs>
