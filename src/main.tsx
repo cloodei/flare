@@ -6,6 +6,9 @@ import Providers from './components/providers'
 import App from './App.tsx'
 import './index.css'
 
+console.log(process.env.VITE_API_URL)
+console.log(import.meta.env.VITE_API_URL)
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
