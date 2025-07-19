@@ -57,12 +57,13 @@ export default function Dashboard() {
     
     mqttClient.on("message", (topic, message) => {
       switch (topic) {
-        case "pi/online":
+        case "pi/online": {
           const online = message.toString() === "1";
           setPiOnline(online);
           break;
+        }
         
-        case "pi/led":
+        case "pi/led": {
           if (message.length === 0)
             break;
           
@@ -74,8 +75,9 @@ export default function Dashboard() {
             state: item[item.length - 1] === "1"
           })));
           break;
+        }
     
-        case "pi/relay":
+        case "pi/relay": {
           if (message.length === 0)
             break;
           
@@ -89,8 +91,9 @@ export default function Dashboard() {
     
           setRelay(relays);
           break;
+        }
 
-        case "pi/alert":
+        case "pi/alert": {
           if (message.length === 0)
             break;
           
@@ -105,10 +108,12 @@ export default function Dashboard() {
             room: alertMsg[3]
           });
           break;
+        }
     
-        default:
+        default: {
           console.log("Unknown topic:", topic);
           break;
+        }
       }
     })
   }, []);

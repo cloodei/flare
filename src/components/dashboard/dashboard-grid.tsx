@@ -1,6 +1,6 @@
 import { Lightbulb } from "lucide-react"
 import { motion, type Variants } from "motion/react"
-import { useControlsActions, useLED, useRelay, usePiOnline } from "@/stores/controls-store"
+import { useControlsActions, useLED, usePiOnline } from "@/stores/controls-store"
 import ControlCard from "./control-card"
 import DeviceStatus from "./device-status"
 import { TypeWriter } from "../ui/typewriter"

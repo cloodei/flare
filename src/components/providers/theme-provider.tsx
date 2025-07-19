@@ -51,7 +51,7 @@ export function ThemeProvider({
   )
 }
 
-export const useTheme = () => {
+export function useTheme() {
   const context = useContext(ThemeProviderContext)
 
   if (context === undefined)

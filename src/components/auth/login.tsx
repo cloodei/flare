@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { API_BASE_URL } from "@/lib/api";
-import { useAuthActions, type User } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 
 interface LoginFormData {
   username: string;

@@ -1,4 +1,4 @@
-var MQTT_CLUSTER_WS: string, MQTT_USERNAME: string, MQTT_PASSWORD: string, API_BASE_URL: string;
+let MQTT_CLUSTER_WS: string, MQTT_USERNAME: string, MQTT_PASSWORD: string, API_BASE_URL: string;
 
 async function init() {
   const fetchEnv = await fetch("/env");

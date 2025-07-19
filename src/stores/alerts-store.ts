@@ -23,7 +23,7 @@ const useAlertsStore = create<AlertsState>()((set) => ({
   actions: {
     addAlert: (alert: Alert) => set((state) => ({ alerts: [...state.alerts, alert] })),
     removeAlert: (id: number) => set((state) => ({ alerts: state.alerts.filter((alert) => alert.id !== id) })),
-    clearAlerts: () => set((state) => ({ alerts: [] })),
+    clearAlerts: () => set(() => ({ alerts: [] })),
   },
 }))
 

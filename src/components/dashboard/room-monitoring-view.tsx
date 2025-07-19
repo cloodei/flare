@@ -2,12 +2,13 @@ import { useState, useMemo } from "react"
 import { motion } from "motion/react"
 import { type DateRange } from "react-day-picker"
 import { CalendarRange, Clock3, History, Thermometer, Droplets } from "lucide-react"
-import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from "recharts"
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, type TooltipProps } from "recharts"
 import { Card } from "../ui/card"
 import { Button } from "../ui/button"
 import { DatePicker } from "../ui/date-picker"
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
 import { useRoomData, useRoom } from "@/stores/room-store"
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
 
 const time = new Date()
 
@@ -95,12 +96,12 @@ export default function RoomMonitoringView() {
     return { chartData: dailyData, timeFormat: "day" }
   }, [activeFilters.timeRange, dateRange, data])
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-popover border rounded-lg p-3 shadow-lg">
           <p className="text-sm text-popover-foreground/80 mb-2">{label}</p>
-          {payload.map((pld: any, index: number) => (
+          {payload.map((pld, index) => (
             <div key={index} className="text-sm font-semibold flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: pld.color }} />
               <span style={{ color: pld.color }}>

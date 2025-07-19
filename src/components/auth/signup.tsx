@@ -1,11 +1,11 @@
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
-import { User as UserIcon } from "lucide-react";
+import { User } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { PasswordInput } from "../ui/password-input";
 import { API_BASE_URL } from "@/lib/api";
-import { useAuthActions, type User } from "@/stores/auth-store";
+import { useAuthActions } from "@/stores/auth-store";
 
 interface SignupFormData {
   username: string;
@@ -58,7 +58,7 @@ export default function Signup() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-[22px]">
       <div className="flex flex-col items-center sm:gap-2 gap-0.5">
-        <UserIcon className="sm:h-12 h-10 sm:w-12 w-10" />
+        <User className="sm:h-12 h-10 sm:w-12 w-10" />
         <h1 className="sm:text-3xl text-2xl font-bold">Tạo tài khoản</h1>
         <p className="text-muted-foreground text-sm">Đăng ký</p>
       </div>

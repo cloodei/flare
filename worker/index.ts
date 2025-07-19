@@ -6,7 +6,7 @@ interface Env {
 }
 
 export default {
-  fetch(request, env, _ctx) {
+  fetch(request, env) {
     const url = new URL(request.url);
     
     if (url.pathname === "/env") {
