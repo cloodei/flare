@@ -4,10 +4,10 @@ import { Suspense, lazy, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton"
 import { getAllReadings } from "@/lib/api"
+import { useRoomActions } from "@/stores/room-store";
 import { useControlsActions } from "@/stores/controls-store"
 import { useAuthActions, useUser } from "@/stores/auth-store";
 import { useAlerts, useAlertsActions } from "@/stores/alerts-store";
-import { useRoomActions, useRoomData, useRoom } from "@/stores/room-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Header from "@/components/Header"
 import AlertsPanel from "@/components/dashboard/alerts-panel"
@@ -20,10 +20,10 @@ import RoomMonitoringView from "@/components/dashboard/room-monitoring-view";
 const DashboardGrid = lazy(() => import("@/components/dashboard/dashboard-grid"))
 
 export default function Dashboard() {
-  const mqttClient = mqtt.connect(import.meta.env.VITE_MQTT_CLUSTER_WS!, {
+  const mqttClient = mqtt.connect(process.env.VITE_MQTT_CLUSTER_WS!, {
     protocol: "wss",
-    username: import.meta.env.VITE_MQTT_USERNAME,
-    password: import.meta.env.VITE_MQTT_PASSWORD
+    username: process.env.VITE_MQTT_USERNAME,
+    password: process.env.VITE_MQTT_PASSWORD
   })
   const { data, isPending, isError } = useQuery({
     queryKey: ["monitoring-data"],
@@ -83,8 +83,8 @@ export default function Dashboard() {
           const relays = new Array(relayMsg.length);
     
           for (let i = 0; i < relayMsg.length; ++i) {
-            const [name, state] = relayMsg[i].split("-");
-            relays[i] = { id: i, name, state: state === "1" };
+            const relay = relayMsg[i];
+            relays[i] = { id: i, name: relay.slice(0, relay.length - 1), state: relay[relay.length - 1] === "1" };
           }
     
           setRelay(relays);

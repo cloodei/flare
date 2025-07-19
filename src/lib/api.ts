@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL!;
+const API_BASE_URL = process.env.VITE_API_URL!;
 
 async function getAllReadings() {
   let refresh = false, response = await fetch(`${API_BASE_URL}/readings`, {
