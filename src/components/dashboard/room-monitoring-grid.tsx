@@ -12,7 +12,7 @@ export default function RoomMonitoringGrid() {
   const { setRoom } = useRoomActions();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="mt-7 md:mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {rooms.map((room, index) => (
         <motion.div
           key={room.name}

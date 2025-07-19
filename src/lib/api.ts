@@ -1,4 +1,14 @@
-const API_BASE_URL = process.env.VITE_API_URL!;
+var MQTT_CLUSTER_WS: string, MQTT_USERNAME: string, MQTT_PASSWORD: string, API_BASE_URL: string;
+
+async function init() {
+  const fetchEnv = await fetch("/env");
+  const env = await fetchEnv.json();
+
+  MQTT_CLUSTER_WS = env.MQTT_CLUSTER_WS;
+  MQTT_USERNAME = env.MQTT_USERNAME;
+  MQTT_PASSWORD = env.MQTT_PASSWORD;
+  API_BASE_URL = env.API_BASE_URL;
+}
 
 async function getAllReadings() {
   let refresh = false, response = await fetch(`${API_BASE_URL}/readings`, {
@@ -56,4 +66,4 @@ async function getAllReadings() {
   return data;
 }
 
-export { API_BASE_URL, getAllReadings };
+export { MQTT_CLUSTER_WS, MQTT_USERNAME, MQTT_PASSWORD, API_BASE_URL, getAllReadings, init };

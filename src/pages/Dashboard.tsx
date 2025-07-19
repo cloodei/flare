@@ -3,12 +3,12 @@ import { Home, Settings } from "lucide-react"
 import { Suspense, lazy, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton"
-import { getAllReadings } from "@/lib/api"
 import { useRoomActions } from "@/stores/room-store";
 import { useControlsActions } from "@/stores/controls-store"
 import { useAuthActions, useUser } from "@/stores/auth-store";
 import { useAlerts, useAlertsActions } from "@/stores/alerts-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getAllReadings, MQTT_CLUSTER_WS, MQTT_PASSWORD, MQTT_USERNAME } from "@/lib/api"
 import Header from "@/components/Header"
 import AlertsPanel from "@/components/dashboard/alerts-panel"
 import MonitoringView from "@/components/dashboard/monitoring-view"
@@ -20,10 +20,10 @@ import RoomMonitoringView from "@/components/dashboard/room-monitoring-view";
 const DashboardGrid = lazy(() => import("@/components/dashboard/dashboard-grid"))
 
 export default function Dashboard() {
-  const mqttClient = mqtt.connect(process.env.VITE_MQTT_CLUSTER_WS!, {
+  const mqttClient = mqtt.connect(MQTT_CLUSTER_WS, {
     protocol: "wss",
-    username: process.env.VITE_MQTT_USERNAME,
-    password: process.env.VITE_MQTT_PASSWORD
+    username: MQTT_USERNAME,
+    password: MQTT_PASSWORD
   })
   const { data, isPending, isError } = useQuery({
     queryKey: ["monitoring-data"],
@@ -141,43 +141,6 @@ export default function Dashboard() {
     const roomName = data.data[0].room
     setRoom(roomName)
   }
-  
-  // function roomsData() {
-  //   if (!data)
-  //     return [];
-
-  //   const roomGroup = data.data.reduce((acc, item) => {
-  //     const room = item.room;
-      
-  //     if (!acc[room])
-  //       acc[room] = [];
-      
-  //     acc[room].push({
-  //       temperature: item.temperature,
-  //       humidity: item.humidity,
-  //       time: item.time
-  //     });
-      
-  //     return acc;
-  //   }, {} as {
-  //     [key: string]: {
-  //       temperature: number;
-  //       humidity: number;
-  //       time: Date;
-  //     }[]
-  //   })
-
-  //   const roomName = data.data[0].room
-  //   const roomData = roomGroup[roomName]
-  //   setRoom(roomName)
-  //   setRoomData(roomData)
-
-  //   return Object.entries(roomGroup).map(([room, items]) => ({
-  //     name: room,
-  //     humidity: items.reduce((acc, item) => acc + item.humidity, 0) / items.length || 0,
-  //     temperature: items.reduce((acc, item) => acc + item.temperature, 0) / items.length || 0
-  //   }))
-  // }
 
   return (
     <div className="min-h-screen bg-background">
