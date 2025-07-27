@@ -16,7 +16,7 @@ export default function AvgTempPanel() {
       case "24h":
         return "24 giờ trước"
       default:
-        return "Từ ngày " + time.from?.toDateString() + " đến ngày " + time.to?.toDateString()
+        return "Từ ngày " + time.from?.toLocaleDateString("vi-VN") + " đến ngày " + time.to?.toLocaleDateString("vi-VN")
     }
   }
 

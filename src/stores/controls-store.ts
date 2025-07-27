@@ -8,6 +8,7 @@ interface LEDState {
 interface RelayState {
   id: number;
   name: string;
+  room: string;
   state: boolean;
 }
 interface ControlsState {

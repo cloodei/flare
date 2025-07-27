@@ -1,16 +1,20 @@
 import { lazy, Suspense } from "react";
-import { useSearchParams } from "react-router";
+import { Navigate, useSearchParams } from "react-router";
 import { Card } from "@/components/ui/card";
+import { useUser } from "@/stores/auth-store";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Login from "@/components/auth/login";
-import { Skeleton } from "@/components/ui/skeleton";
 import ModeToggle from "@/components/mode-toggle";
-
 const Signup = lazy(() => import("@/components/auth/signup"));
 
 export default function Auth() {
   const [tab, setTab] = useSearchParams("?tab=login");
-  
+  const user = useUser();
+
+  if (user)
+    return <Navigate to="/" replace />;
+
   function handleTabChange(value: string) {
     setTab({ tab: value });
   }
@@ -26,10 +30,15 @@ export default function Auth() {
 
         <Tabs className="w-full" onValueChange={handleTabChange} value={tabValue}>
           <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 dark:bg-[#1a1a1a]">
-            <TabsTrigger value="login" className="text-gray-600 dark:text-[#e1e1e1] data-[state=active]:bg-white dark:data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-gray-900 dark:data-[state=active]:text-white">
+            <TabsTrigger
+              value="login"
+              className="text-gray-600 dark:text-[#e1e1e1] data-[state=active]:bg-white dark:data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-gray-900 dark:data-[state=active]:text-white cursor-pointer">
               Đăng nhập
             </TabsTrigger>
-            <TabsTrigger value="signup" className="text-gray-600 dark:text-[#e1e1e1] data-[state=active]:bg-white dark:data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-gray-900 dark:data-[state=active]:text-white">
+
+            <TabsTrigger
+              value="signup"
+              className="text-gray-600 dark:text-[#e1e1e1] data-[state=active]:bg-white dark:data-[state=active]:bg-[#2a2a2a] data-[state=active]:text-gray-900 dark:data-[state=active]:text-white cursor-pointer">
               Đăng ký
             </TabsTrigger>
           </TabsList>

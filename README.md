@@ -3,10 +3,9 @@ Smart House Monitor Dashboard
 ```
 
 # Tech Stack
-- Next.js
-- React
+- React.js
 - Tailwind CSS
-- Shadcn UI
+- shadcn/ui
 - Cloudflare Workers
 
 

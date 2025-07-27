@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { LogOut, Wifi, WifiOff } from "lucide-react";
+import { out } from "@/lib/api";
 import { usePiOnline } from "@/stores/controls-store";
-import { API_BASE_URL } from "@/lib/api";
 import { useAuthActions } from "@/stores/auth-store";
 import ModeToggle from "./mode-toggle";
 
@@ -11,18 +11,12 @@ export default function Header() {
   const navigate = useNavigate();
   const systemOnline = usePiOnline();
 
-  const handleLogout = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/logout`, { method: "POST" });
-    }
-    catch (error) {
-      console.error("Logout failed:", error);
-    }
-    finally {
+  function handleLogout() {
+    out().then(() => {
       logout();
       navigate("/auth");
-    }
-  };
+    });
+  }
 
   return (
     <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] sm:w-[400px] max-w-4xl z-50">
@@ -36,7 +30,7 @@ export default function Header() {
           <motion.div
             className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-300/70 dark:border-transparent dark:bg-secondary"
             animate={{
-              boxShadow: systemOnline ? `0 0 0 4px oklch(from var(--success) l c h / 30%)` : "none",
+              boxShadow: systemOnline ? `0 0 0 4px oklch(from var(--success) l c h / 30%)` : undefined,
             }}
             transition={{
               duration: 2,

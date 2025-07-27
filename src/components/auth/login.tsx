@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { PasswordInput } from "../ui/password-input";
 import { API_BASE_URL } from "@/lib/api";
 import { useAuthActions } from "@/stores/auth-store";
 
@@ -43,8 +44,8 @@ export default function Login() {
         return;
       }
 
-      const { access_token, user } = await response.json();
-      login(user, access_token);
+      const { access_token, user_id } = await response.json();
+      login({ id: user_id, username: data.username }, access_token);
       navigate("/");
     }
     catch (error) {
@@ -79,8 +80,7 @@ export default function Login() {
           </p>
         )}
 
-        <Input
-          type="password"
+        <PasswordInput
           placeholder="Mật khẩu"
           {...register("password")}
           aria-invalid={!!errors.password?.message}
@@ -107,7 +107,7 @@ export default function Login() {
       <div className="text-center">
         <Link
           to={isSubmitting ? "#" : "/auth?tab=signup"}
-          className="text-sm text-gray-500 hover:text-gray-700 dark:text-[#a1a1a1] dark:hover:text-white transition-colors"
+          className="text-sm text-gray-500 hover:text-gray-700 dark:text-[#b3b3b3] dark:hover:text-white transition-colors"
         >
           Chưa có tài khoản? <span className="font-semibold">Đăng ký</span>
         </Link>

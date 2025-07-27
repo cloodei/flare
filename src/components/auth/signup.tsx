@@ -3,8 +3,8 @@ import { Link, useNavigate } from "react-router";
 import { User } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { PasswordInput } from "../ui/password-input";
 import { API_BASE_URL } from "@/lib/api";
+import { PasswordInput } from "../ui/password-input";
 import { useAuthActions } from "@/stores/auth-store";
 
 interface SignupFormData {
@@ -42,8 +42,8 @@ export default function Signup() {
         return;
       }
 
-      const { access_token, user } = await response.json();
-      login(user, access_token);
+      const { access_token, user_id } = await response.json();
+      login({ id: user_id, username: data.username }, access_token);
       navigate("/");
     }
     catch (error) {

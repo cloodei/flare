@@ -1,14 +1,17 @@
 import mqtt from "mqtt";
-import { Home, Settings } from "lucide-react"
-import { Suspense, lazy, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
+import { Home, Settings } from "lucide-react"
+import { Suspense, lazy, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton"
+import { useSetPublish } from "@/stores/publish-store";
 import { useRoomActions } from "@/stores/room-store";
 import { useControlsActions } from "@/stores/controls-store"
 import { useAuthActions, useUser } from "@/stores/auth-store";
 import { useAlerts, useAlertsActions } from "@/stores/alerts-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getAllReadings, MQTT_CLUSTER_WS, MQTT_PASSWORD, MQTT_USERNAME } from "@/lib/api"
+import { getAllReadings, CLUSTER, PASSAGE, USAGE, out } from "@/lib/api"
+
 import Header from "@/components/Header"
 import AlertsPanel from "@/components/dashboard/alerts-panel"
 import MonitoringView from "@/components/dashboard/monitoring-view"
@@ -20,35 +23,38 @@ import RoomMonitoringView from "@/components/dashboard/room-monitoring-view";
 const DashboardGrid = lazy(() => import("@/components/dashboard/dashboard-grid"))
 
 export default function Dashboard() {
-  const mqttClient = mqtt.connect(MQTT_CLUSTER_WS, {
-    protocol: "wss",
-    username: MQTT_USERNAME,
-    password: MQTT_PASSWORD
-  })
   const { data, isPending, isError } = useQuery({
     queryKey: ["monitoring-data"],
     queryFn: getAllReadings,
     staleTime: 45 * 1000
   });
-  const { setLED, setRelay, setPiOnline } = useControlsActions();
-  const { setAuth } = useAuthActions();
   const { addAlert } = useAlertsActions();
+  const { setAuth, logout } = useAuthActions();
   const { setRoomData, setRoom } = useRoomActions();
-  const countAlerts = useAlerts().length;
+  const { setLED, setRelay, setPiOnline } = useControlsActions();
+  const setPublish = useSetPublish();
   const user = useUser();
-
-  function publish(topic: string, message: string) {
-    mqttClient.publishAsync(topic, message);
-  }
+  const countAlerts = useAlerts().length;
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const mqttClient = mqtt.connect(CLUSTER, {
+      protocol: "wss",
+      username: USAGE,
+      password: PASSAGE
+    })
+
+    setPublish((topic, message) => {
+      mqttClient.publishAsync(topic, message)
+    })
+
     mqttClient.on("connect", () => {
-      console.log("Connected to MQTT broker")
       mqttClient.subscribe("pi/led")
       mqttClient.subscribe("pi/alert")
       mqttClient.subscribe("pi/relay")
       mqttClient.subscribe("pi/online")
       mqttClient.publishAsync("client/online", "1")
+      console.log("Connected to MQTT broker")
     })
     
     mqttClient.on("error", (error) => {
@@ -82,11 +88,11 @@ export default function Dashboard() {
             break;
           
           const relayMsg = message.toString().split("|");
-          const relays = new Array(relayMsg.length);
+          const relays = new Array<{ id: number; name: string; room: string; state: boolean }>(relayMsg.length);
     
           for (let i = 0; i < relayMsg.length; ++i) {
-            const relay = relayMsg[i];
-            relays[i] = { id: i, name: relay.slice(0, relay.length - 1), state: relay[relay.length - 1] === "1" };
+            const [relay, room, state] = relayMsg[i].split("-");
+            relays[i] = { id: i, name: relay.slice(0, relay.length - 1), state: state === "1", room };
           }
     
           setRelay(relays);
@@ -117,6 +123,15 @@ export default function Dashboard() {
       }
     })
   }, []);
+
+  if (data === 0) {
+    out().then(() => {
+      logout();
+      navigate("/auth");
+    });
+
+    return;
+  }
 
   if (data?.refresh)
     setAuth(JSON.parse(localStorage.getItem("user")!), localStorage.getItem("access_token")!);
@@ -181,7 +196,11 @@ export default function Dashboard() {
                 <MonitoringView data={data.data} />
                 <AvgTempPanel />
 
-                <RoomMonitoringGrid /> {/* Changes monitoring chart for each room in <MonitoringView /> below */}
+                <h2 className="mt-8 md:mt-16 mb-3 text-2xl font-bold text-foreground">
+                  Nhiệt độ và độ ẩm từng phòng
+                </h2>
+
+                <RoomMonitoringGrid />
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   <div className="md:col-span-2 lg:col-span-3">
                     <RoomMonitoringView />
@@ -194,7 +213,7 @@ export default function Dashboard() {
 
           <TabsContent value="devices" className="space-y-8">
             <Suspense fallback={<DevicesSkeleton />}>
-              <DashboardGrid publish={publish}/>
+              <DashboardGrid />
             </Suspense>
           </TabsContent>
         </Tabs>

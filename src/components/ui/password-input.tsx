@@ -56,7 +56,7 @@ function PasswordInput({
           className={cn(
             "absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm",
-            "disabled:opacity-50 disabled:pointer-events-none",
+            "disabled:opacity-50 disabled:pointer-events-none cursor-pointer",
             toggleClassName
           )}
           disabled={props.disabled}

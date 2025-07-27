@@ -1,8 +1,8 @@
 interface Env {
-  VITE_MQTT_CLUSTER_WS: string;
-  VITE_MQTT_USERNAME: string;
-  VITE_MQTT_PASSWORD: string;
-  VITE_API_URL: string;
+  CLUSTER: string
+  USAGE: string
+  PASSAGE: string
+  VITE_API_URL: string
 }
 
 export default {
@@ -11,10 +11,10 @@ export default {
     
     if (url.pathname === "/env") {
       return Response.json({
-        MQTT_CLUSTER_WS: env.VITE_MQTT_CLUSTER_WS,
-        MQTT_USERNAME: env.VITE_MQTT_USERNAME,
-        MQTT_PASSWORD: env.VITE_MQTT_PASSWORD,
-        API_BASE_URL: env.VITE_API_URL,
+        CLUSTER: env.CLUSTER,
+        USAGE: env.USAGE,
+        PASSAGE: env.PASSAGE,
+        API_BASE_URL: env.VITE_API_URL
       });
     }
 
@@ -24,5 +24,5 @@ export default {
       });
     }
 		return new Response(null, { status: 404 });
-  },
-} satisfies ExportedHandler<Env>;
+  }
+} satisfies ExportedHandler<Env>

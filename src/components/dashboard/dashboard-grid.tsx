@@ -1,12 +1,15 @@
 import { Lightbulb } from "lucide-react"
 import { motion, type Variants } from "motion/react"
 import { useControlsActions, useLED, usePiOnline } from "@/stores/controls-store"
+import { usePublish } from "@/stores/publish-store"
+import { TypeWriter } from "../ui/typewriter"
 import ControlCard from "./control-card"
 import DeviceStatus from "./device-status"
-import { TypeWriter } from "../ui/typewriter"
 
 const containerVariants: Variants = {
-  hidden: { opacity: 0 },
+  hidden: {
+    opacity: 0
+  },
   show: {
     opacity: 1,
     transition: {
@@ -17,7 +20,10 @@ const containerVariants: Variants = {
 }
 
 const itemVariants: Variants = {
-  hidden: { y: 30, opacity: 0 },
+  hidden: {
+    y: 30,
+    opacity: 0
+  },
   show: {
     y: 0,
     opacity: 1,
@@ -29,21 +35,11 @@ const itemVariants: Variants = {
   },
 }
 
-const mockDevices = [
-  { name: "temp_humidity_sensor", isOnline: true, lastSeen: "2 min ago" },
-  { name: "main_light_relay", isOnline: true, lastSeen: "1 min ago" },
-  { name: "desk_fan_relay", isOnline: false, lastSeen: "1 hour ago" },
-  { name: "motion_sensor_living_room", isOnline: true, lastSeen: "30 sec ago" },
-]
-
-interface DashboardGridProps {
-  publish: (topic: string, message: string) => void;
-}
-export default function DashboardGrid({ publish: pub }: DashboardGridProps) {
+export default function DashboardGrid() {
   let reds = 0, greens = 0, yellows = 0, rgbs = 0;
   const leds = useLED();
   const on = usePiOnline();
-  // const relays = useRelay();
+  const pub = usePublish();
   const { setLED } = useControlsActions();
 
   const getLEDColor = (color: "Red" | "Green" | "Yellow" | "RGB") => {
@@ -59,10 +55,10 @@ export default function DashboardGrid({ publish: pub }: DashboardGridProps) {
     }
   }
 
-  const publish = (topic: string, message: string, id: number) => {
+  const publishLED = (topic: string, message: string, id: number) => {
     pub(topic, message);
 
-    setLED(leds.map((led) => {
+    setLED(leds.map(led => {
       if (led.id === id)
         return { ...led, state: !led.state };
 
@@ -80,7 +76,7 @@ export default function DashboardGrid({ publish: pub }: DashboardGridProps) {
       {on ? (
         <>
           <motion.div variants={containerVariants} className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {leds.map((led) => {
+            {leds.map(led => {
               const deviceName = getLEDColor(led.color);
 
               return (
@@ -92,7 +88,7 @@ export default function DashboardGrid({ publish: pub }: DashboardGridProps) {
                     description={`Nhấn để ${led.state ? "tắt" : "bật"} ${deviceName}`}
                     initialState={led.state}
                     icon={<Lightbulb className="size-5" />}
-                    publish={publish}
+                    publish={publishLED}
                   />
                 </motion.div>
               );
@@ -100,7 +96,7 @@ export default function DashboardGrid({ publish: pub }: DashboardGridProps) {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <DeviceStatus devices={mockDevices} />
+            <DeviceStatus />
           </motion.div>
         </>
       ) : (

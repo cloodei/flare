@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface User {
+type User = {
   id: number;
   username: string;
 }
