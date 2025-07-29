@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { Navigate, Outlet } from "react-router";
 import { useEffect, useState } from "react";
-import { API_BASE_URL } from "@/lib/api";
+import { base } from "@/lib/api";
 import { useAuthActions, type User } from "@/stores/auth-store";
 
 async function checkSession() {
@@ -10,7 +10,7 @@ async function checkSession() {
 
   if (accessToken && user) {
     try {
-      const response = await fetch(`${API_BASE_URL}/me`, {
+      const response = await fetch(`${base}/me`, {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
@@ -37,7 +37,7 @@ async function checkSession() {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/refresh`, {
+    const response = await fetch(`${base}/refresh`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",

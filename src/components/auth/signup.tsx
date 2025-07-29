@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { User } from "lucide-react";
+import { base } from "@/lib/api";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { API_BASE_URL } from "@/lib/api";
 import { PasswordInput } from "../ui/password-input";
 import { useAuthActions } from "@/stores/auth-store";
 
@@ -26,7 +26,7 @@ export default function Signup() {
 
   async function onSubmit(data: SignupFormData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/signup`, {
+      const response = await fetch(`${base}/signup`, {
         method: "POST",
         credentials: "include",
         headers: {

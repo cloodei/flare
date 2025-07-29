@@ -3,31 +3,31 @@ const opts: RequestInit = {
   credentials: "include",
   headers: { "Content-Type": "application/json" }
 };
-let CLUSTER: string, USAGE: string, PASSAGE: string, API_BASE_URL: string;
+let cluster: string, usage: string, passage: string, base: string;
 
 function off() {
-  fetch(`${API_BASE_URL}/logoff`, {
+  fetch(`${base}/logoff`, {
     credentials: "include"
   });
 }
 
 function out() {
-  return fetch(`${API_BASE_URL}/logout`, opts);
+  return fetch(`${base}/logout`, opts);
 }
 
 async function init() {
   const fetchEnv = await fetch("/env");
   const env = await fetchEnv.json();
 
-  CLUSTER = env.CLUSTER;
-  USAGE = env.USAGE;
-  PASSAGE = env.PASSAGE;
-  API_BASE_URL = env.API_BASE_URL;
+  cluster = env.cluster;
+  usage = env.usage;
+  passage = env.passage;
+  base = env.base;
 }
 
 async function getAllReadings() {
   let refresh = false;
-  let response = await fetch(`${API_BASE_URL}/readings`, {
+  let response = await fetch(`${base}/readings`, {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
@@ -36,7 +36,7 @@ async function getAllReadings() {
   });
 
   if (response.status === 401) {
-    const res = await fetch(`${API_BASE_URL}/refresh`, opts);
+    const res = await fetch(`${base}/refresh`, opts);
     if (!res.ok)
       return 0 as const;
 
@@ -46,7 +46,7 @@ async function getAllReadings() {
     localStorage.setItem("access_token", newAccessToken);
     localStorage.setItem("user", JSON.stringify(user));
 
-    response = await fetch(`${API_BASE_URL}/readings`, {
+    response = await fetch(`${base}/readings`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
@@ -73,4 +73,4 @@ async function getAllReadings() {
   };
 }
 
-export { CLUSTER, USAGE, PASSAGE, API_BASE_URL, getAllReadings, init, out, off };
+export { cluster, usage, passage, base, getAllReadings, init, out, off };

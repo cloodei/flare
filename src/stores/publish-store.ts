@@ -4,8 +4,8 @@ interface PublishState {
   publish: (topic: string, message: string) => void;
   setPublish: (publishFn: (topic: string, message: string) => void) => void;
 }
-const usePublishStore = create<PublishState>()((set) => ({
-  publish: (topic: string, message: string) => {},
+const usePublishStore = create<PublishState>()(set => ({
+  publish: (topic: string, message: string) => { topic; message },
   setPublish: (publishFn: (topic: string, message: string) => void) => set({ publish: publishFn })
 }))
 

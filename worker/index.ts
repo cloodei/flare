@@ -11,10 +11,10 @@ export default {
     
     if (url.pathname === "/env") {
       return Response.json({
-        CLUSTER: env.CLUSTER,
-        USAGE: env.USAGE,
-        PASSAGE: env.PASSAGE,
-        API_BASE_URL: env.VITE_API_URL
+        cluster: env.CLUSTER,
+        usage: env.USAGE,
+        passage: env.PASSAGE,
+        base: env.VITE_API_URL
       });
     }
 

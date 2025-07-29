@@ -10,7 +10,7 @@ import { useControlsActions } from "@/stores/controls-store"
 import { useAuthActions, useUser } from "@/stores/auth-store";
 import { useAlerts, useAlertsActions } from "@/stores/alerts-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getAllReadings, CLUSTER, PASSAGE, USAGE, out } from "@/lib/api"
+import { getAllReadings, cluster, passage, usage, out } from "@/lib/api"
 
 import Header from "@/components/Header"
 import AlertsPanel from "@/components/dashboard/alerts-panel"
@@ -26,22 +26,22 @@ export default function Dashboard() {
   const { data, isPending, isError } = useQuery({
     queryKey: ["monitoring-data"],
     queryFn: getAllReadings,
-    staleTime: 45 * 1000
+    staleTime: 6000
   });
   const { addAlert } = useAlertsActions();
   const { setAuth, logout } = useAuthActions();
   const { setRoomData, setRoom } = useRoomActions();
-  const { setLED, setRelay, setPiOnline } = useControlsActions();
+  const { setLED, setRelay, setPiOnline, setDHT } = useControlsActions();
   const setPublish = useSetPublish();
   const user = useUser();
   const countAlerts = useAlerts().length;
   const navigate = useNavigate();
 
   useEffect(() => {
-    const mqttClient = mqtt.connect(CLUSTER, {
+    const mqttClient = mqtt.connect(cluster, {
       protocol: "wss",
-      username: USAGE,
-      password: PASSAGE
+      username: usage,
+      password: passage
     })
 
     setPublish((topic, message) => {
@@ -49,6 +49,7 @@ export default function Dashboard() {
     })
 
     mqttClient.on("connect", () => {
+      mqttClient.subscribe("pi/dht")
       mqttClient.subscribe("pi/led")
       mqttClient.subscribe("pi/alert")
       mqttClient.subscribe("pi/relay")
@@ -56,16 +57,19 @@ export default function Dashboard() {
       mqttClient.publishAsync("client/online", "1")
       console.log("Connected to MQTT broker")
     })
-    
-    mqttClient.on("error", (error) => {
-      console.error("MQTT connection error:", error)
-    })
-    
+    mqttClient.on("error", (error) => console.error("MQTT connection error:", error))
+
     mqttClient.on("message", (topic, message) => {
       switch (topic) {
         case "pi/online": {
           const online = message.toString() === "1";
           setPiOnline(online);
+          break;
+        }
+
+        case "pi/dht": {
+          const [room, online] = message.toString().split("|");
+          setDHT({ room, online: online === "1" });
           break;
         }
         
@@ -74,12 +78,12 @@ export default function Dashboard() {
             break;
           
           const msg = message.toString().split("|");
-
           setLED(msg.map((item, id) => ({
             id,
             color: item.slice(0, item.length - 1) as "Red" | "Green" | "Yellow" | "RGB",
             state: item[item.length - 1] === "1"
           })));
+
           break;
         }
     
@@ -104,7 +108,6 @@ export default function Dashboard() {
             break;
           
           const alertMsg = message.toString().split("|");
-          
           addAlert({
             id: countAlerts + 1,
             type: alertMsg[0],
@@ -113,6 +116,7 @@ export default function Dashboard() {
             time: new Date().toISOString(),
             room: alertMsg[3]
           });
+
           break;
         }
     

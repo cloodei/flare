@@ -1,10 +1,10 @@
 import { LogIn } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
+import { base } from "@/lib/api";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { PasswordInput } from "../ui/password-input";
-import { API_BASE_URL } from "@/lib/api";
 import { useAuthActions } from "@/stores/auth-store";
 
 interface LoginFormData {
@@ -24,7 +24,7 @@ export default function Login() {
 
   async function onSubmit(data: LoginFormData) {
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${base}/login`, {
         method: "POST",
         credentials: "include",
         headers: {
