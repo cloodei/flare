@@ -68,8 +68,8 @@ export default function Dashboard() {
         }
 
         case "pi/dht": {
-          const [room, online] = message.toString().split("|");
-          setDHT({ room, online: online === "1" });
+          const msg = message.toString();
+          setDHT({ room: msg.slice(0, msg.length - 1), online: msg[msg.length - 1] === "1" });
           break;
         }
         
@@ -77,8 +77,8 @@ export default function Dashboard() {
           if (message.length === 0)
             break;
           
-          const msg = message.toString().split("|");
-          setLED(msg.map((item, id) => ({
+          const ledsmsg = message.toString().split("|");
+          setLED(ledsmsg.map((item, id) => ({
             id,
             color: item.slice(0, item.length - 1) as "Red" | "Green" | "Yellow" | "RGB",
             state: item[item.length - 1] === "1"
@@ -95,8 +95,8 @@ export default function Dashboard() {
           const relays = new Array<{ id: number; name: string; room: string; state: boolean }>(relayMsg.length);
     
           for (let i = 0; i < relayMsg.length; ++i) {
-            const [relay, room, state] = relayMsg[i].split("-");
-            relays[i] = { id: i, name: relay.slice(0, relay.length - 1), state: state === "1", room };
+            const [name, room, state] = relayMsg[i].split("-");
+            relays[i] = { id: i, name, state: state === "1", room };
           }
     
           setRelay(relays);

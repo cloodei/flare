@@ -5,7 +5,7 @@ interface PublishState {
   setPublish: (publishFn: (topic: string, message: string) => void) => void;
 }
 const usePublishStore = create<PublishState>()(set => ({
-  publish: (topic: string, message: string) => {}, // eslint-disable-line no-console
+  publish: (topic: string, message: string) => {}, // eslint-disable-line
   setPublish: (publishFn: (topic: string, message: string) => void) => set({ publish: publishFn })
 }))
 
