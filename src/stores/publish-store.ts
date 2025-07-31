@@ -5,11 +5,11 @@ interface PublishState {
   setPublish: (publishFn: (topic: string, message: string) => void) => void;
 }
 const usePublishStore = create<PublishState>()(set => ({
-  publish: (topic: string, message: string) => { topic; message },
+  publish: (topic: string, message: string) => {}, // eslint-disable-line no-console
   setPublish: (publishFn: (topic: string, message: string) => void) => set({ publish: publishFn })
 }))
 
 const usePublish    = () => usePublishStore(state => state.publish);
 const useSetPublish = () => usePublishStore(state => state.setPublish);
 
-export { usePublish, useSetPublish };
+export { usePublish, useSetPublish }

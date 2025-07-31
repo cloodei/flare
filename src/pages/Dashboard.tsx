@@ -1,7 +1,7 @@
 import mqtt from "mqtt";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-import { Home, Settings } from "lucide-react"
+import { AlertCircle, Home, Settings } from "lucide-react"
 import { Suspense, lazy, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSetPublish } from "@/stores/publish-store";
@@ -195,7 +195,7 @@ export default function Dashboard() {
               <MonitoringSkeleton />
             ) : isError ? (
               <MonitoringError />
-            ) : (
+            ) : data.data.length > 0 ? (
               <>
                 <MonitoringView data={data.data} />
                 <AvgTempPanel />
@@ -212,6 +212,8 @@ export default function Dashboard() {
                   <AlertsPanel />
                 </div>
               </>
+            ) : (
+              <MonitoringEmpty />
             )}
           </TabsContent>
 
@@ -232,6 +234,20 @@ function DevicesSkeleton() {
       <Skeleton className="h-[200px]" />
       <Skeleton className="h-[200px]" />
       <Skeleton className="h-[200px]" />
+    </div>
+  );
+}
+
+function MonitoringEmpty() {
+  return (
+    <div className="flex items-center justify-center h-full">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2">
+          <AlertCircle className="size-4 mr-1 text-red-500" />
+          Không có dữ liệu
+        </h2>
+        <p className="text-muted-foreground">Vui lòng thử lại sau.</p>
+      </div>
     </div>
   );
 }

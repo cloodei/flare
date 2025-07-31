@@ -1,20 +1,22 @@
 import type { DateRange } from "react-day-picker";
 import { create } from "zustand";
 
+type TimeRange = DateRange | "7d" | "30d" | "24h";
+
 interface Avg {
   temperature: number;
   humidity: number;
 }
 interface AvgStore {
   avg: Avg;
-  time: DateRange | "7d" | "30d" | "24h";
+  time: TimeRange;
 
   actions: {
     setAvg: (avg: {
       temperature: number;
       humidity: number
     }) => void;
-    setTime: (time: DateRange | "7d" | "30d" | "24h") => void;
+    setTime: (time: TimeRange) => void;
   }
 }
 
@@ -23,14 +25,14 @@ const useAvgStore = create<AvgStore>()((set) => ({
     temperature: 0,
     humidity: 0
   },
-  time: "7d",
+  time: "30d",
 
   actions: {
     setAvg: (avg: {
       temperature: number;
       humidity: number
     }) => set({ avg: { temperature: avg.temperature, humidity: avg.humidity } }),
-    setTime: (time: DateRange | "7d" | "30d" | "24h") => set({ time })
+    setTime: (time: TimeRange) => set({ time })
   }
 }))
 

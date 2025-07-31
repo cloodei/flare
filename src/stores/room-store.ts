@@ -19,6 +19,7 @@ interface RoomStore {
 const useRoomStore = create<RoomStore>()((set) => ({
   room: "",
   roomData: {},
+  
   actions: {
     setRoom: (room: string) => set({ room }),
     setRoomData: (roomData: RoomData) => set({ roomData })
