@@ -140,7 +140,7 @@ export default function Dashboard() {
   if (data?.refresh)
     setAuth(JSON.parse(localStorage.getItem("user")!), localStorage.getItem("access_token")!);
 
-  if (data) {
+  if (data && data.data.length > 0) {
     setRoomData(data.data.reduce((acc, item) => {
       const room = item.room;
       
