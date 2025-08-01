@@ -56,22 +56,26 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
 
     const endOfDayToDate = new Date(toDate)
     endOfDayToDate.setHours(23, 59, 59, 999)
-    const filteredData = data.filter((d) => d.time >= fromDate! && d.time <= endOfDayToDate)
+    const filteredData = data.filter(d => ((d.time >= fromDate) && (d.time <= endOfDayToDate)))
 
     const dayDifference = (endOfDayToDate.getTime() - fromDate.getTime()) / (1000 * 3600 * 24)
     if (dayDifference < 3) {
-      const n = filteredData.length
-      const chartData = new Array<{ time: string; temperature: number; humidity: number }>(n)
+      const groupedByHour: { [key: string]: { temps: number[]; humids: number[] } } = {}
       let avgTemp = 0, avgHumidity = 0
+      const n = filteredData.length
 
       for (let i = 0; i < n; ++i) {
         const item = filteredData[i]
-        chartData[i] = {
-          time: item.time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          temperature: item.temperature,
-          humidity: item.humidity
-        }
+        const hourKey = new Date(item.time)
+        hourKey.setMinutes(0, 0, 0)
+        const keyString = hourKey.toISOString()
 
+        if (!groupedByHour[keyString])
+          groupedByHour[keyString] = { temps: [], humids: [] }
+        
+        groupedByHour[keyString].temps.push(item.temperature)
+        groupedByHour[keyString].humids.push(item.humidity)
+        
         avgTemp += item.temperature
         avgHumidity += item.humidity
       }
@@ -81,13 +85,22 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
         humidity: avgHumidity / n || 0
       })
 
+      const hourlyData = Object.entries(groupedByHour)
+        .map(([hourKey, { temps, humids }]) => ({
+          time: new Date(hourKey).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
+          humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
+        }))
+        // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+
       return {
-        chartData,
+        chartData: hourlyData,
         timeFormat: "hour"
       }
     }
 
-    const groupedByDay: { [key: string]: { temps: number[]; humids: number[]; count: number } } = {}, n = filteredData.length
+    const groupedByDay: { [key: string]: { temps: number[]; humids: number[]; count: number } } = {}
+    const n = filteredData.length
     let avgTemp = 0, avgHumidity = 0
 
     for (let i = 0; i < n; ++i) {
@@ -114,7 +127,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
         temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
         humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
       }))
-      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+      // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
     return { chartData: dailyData, timeFormat: "day" }
   }, [activeFilters.timeRange, dateRange, data])
@@ -147,7 +160,6 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      {/* Filter Controls */}
       <div className="flex flex-wrap items-center justify-between gap-6">
         <Tabs defaultValue="both" onValueChange={(value) => setActiveFilters((prev) => ({ ...prev, dataType: value }))}>
           <TabsList className="px-1.5 border dark:border-gray-800 border-gray-400/50">
@@ -195,7 +207,6 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
         </div>
       </div>
 
-      {/* Chart */}
       <Card className="p-4 pl-0 md:p-8 md:pl-0 md:pr-10">
         <ResponsiveContainer width="100%" height={400}>
           <AreaChart data={chartData}>
@@ -219,7 +230,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
               tickFormatter={(value, index) => {
                 if (timeFormat === "day")
                   return value
-                
+
                 return index % 3 === 0 ? value : ""
               }}
             />

@@ -4,12 +4,9 @@ import { Button } from "./button";
 import { Calendar } from "./calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 
-export function DatePicker({
-  value,
-  onChange,
-}: {
-  value: DateRange | undefined
-  onChange: (value: DateRange | undefined) => void
+export function DatePicker({ value, onChange }: {
+  value?: DateRange
+  onChange: (value?: DateRange) => void
 }) {
   return (
     <Popover>
@@ -21,7 +18,7 @@ export function DatePicker({
         >
           {value?.from
             ? value.from.toLocaleDateString() + (value?.to ? " - " + value.to.toLocaleDateString() : "")
-            : "Select a date"}
+            : "Chọn thời gian"}
           <Cal className="mr-1 h-4 w-4" />
         </Button>
       </PopoverTrigger>

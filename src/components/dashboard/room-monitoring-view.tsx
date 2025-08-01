@@ -50,24 +50,40 @@ export default function RoomMonitoringView() {
 
     const endOfDayToDate = new Date(toDate)
     endOfDayToDate.setHours(23, 59, 59, 999)
-    const filteredData = data.filter((d) => d.time >= fromDate! && d.time <= endOfDayToDate)
+    const filteredData = data.filter(d => ((d.time >= fromDate) && (d.time <= endOfDayToDate)))
 
     const dayDifference = (endOfDayToDate.getTime() - fromDate.getTime()) / (1000 * 3600 * 24)
     if (dayDifference < 3) {
       const n = filteredData.length
-      const chartData = new Array<{ time: string; temperature: number; humidity: number }>(n)
-
+      const groupedByHour: { [key: string]: { temps: number[]; humids: number[] } } = {}
+      let avgTemp = 0, avgHumidity = 0
+      
       for (let i = 0; i < n; ++i) {
         const item = filteredData[i]
-        chartData[i] = {
-          time: item.time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          temperature: item.temperature,
-          humidity: item.humidity
-        }
+        const hourKey = new Date(item.time)
+        hourKey.setMinutes(0, 0, 0)
+        const keyString = hourKey.toISOString()
+
+        if (!groupedByHour[keyString])
+          groupedByHour[keyString] = { temps: [], humids: [] }
+        
+        groupedByHour[keyString].temps.push(item.temperature)
+        groupedByHour[keyString].humids.push(item.humidity)
+        
+        avgTemp += item.temperature
+        avgHumidity += item.humidity
       }
 
+      const hourlyData = Object.entries(groupedByHour)
+        .map(([hourKey, { temps, humids }]) => ({
+          time: new Date(hourKey).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
+          humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
+        }))
+        // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+
       return {
-        chartData,
+        chartData: hourlyData,
         timeFormat: "hour"
       }
     }
@@ -91,7 +107,7 @@ export default function RoomMonitoringView() {
         humidity: parseFloat(((humids.reduce((a, b) => a + b, 0) / humids.length) || 0).toFixed(1)),
         temperature: parseFloat(((temps.reduce((a, b) => a + b, 0) / temps.length) || 0).toFixed(1))
       }))
-      .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+      // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
     return { chartData: dailyData, timeFormat: "day" }
   }, [activeFilters.timeRange, dateRange, data])
