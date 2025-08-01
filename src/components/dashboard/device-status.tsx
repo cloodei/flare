@@ -78,9 +78,8 @@ export default function DeviceStatus() {
                 <ThermometerSun className="size-4" />
               </motion.div>
 
-              <p className="font-medium text-foreground">
-                Cảm biến ở: {dht.room}
-              </p>
+              <p className="font-medium text-foreground">Cảm biến nhiệt độ - độ ẩm</p>
+              <p className="text-[13px] text-muted-foreground">{dht.room}</p>
             </div>
 
             <div className="flex items-center gap-2 cursor-pointer" onClick={publishDHT}>
@@ -125,9 +124,8 @@ export default function DeviceStatus() {
                 {device.state ? <Wifi className="size-4" /> : <WifiOff className="size-4" />}
               </motion.div>
 
-              <p className="font-medium text-foreground capitalize">
-                {device.name}
-              </p>
+              <p className="font-medium text-foreground capitalize">{device.name}</p>
+              <p className="text-[13px] text-muted-foreground">{device.room}</p>
             </div>
 
             <div className="flex items-center gap-2 ml-2 cursor-pointer" onClick={() => publishRelay(i)}>

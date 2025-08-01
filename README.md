@@ -10,10 +10,6 @@ Smart House Monitor Dashboard
 
 
 # Features
-- Responsive design
-- Dark mode
-- Light mode
-- Theme toggle
 - House humidity and temperature monitoring
 - Friendly user interface
 - Smart home control (turn on/off lights, fans, etc.)

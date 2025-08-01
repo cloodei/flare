@@ -1,24 +1,23 @@
 import mqtt from "mqtt";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-import { AlertCircle, Home, Settings } from "lucide-react"
 import { Suspense, lazy, useEffect } from "react";
+import { AlertCircle, Home, Settings } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSetPublish } from "@/stores/publish-store";
 import { useRoomActions } from "@/stores/room-store";
 import { useControlsActions } from "@/stores/controls-store"
 import { useAuthActions, useUser } from "@/stores/auth-store";
-import { useAlerts, useAlertsActions } from "@/stores/alerts-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getAllReadings, cluster, passage, usage, out } from "@/lib/api"
 
 import Header from "@/components/Header"
 import AlertsPanel from "@/components/dashboard/alerts-panel"
+import AvgTempPanel from "@/components/dashboard/avgtemp-panel";
 import MonitoringView from "@/components/dashboard/monitoring-view"
 import MonitoringError from "@/components/monitoring-error";
 import RoomMonitoringGrid from "@/components/dashboard/room-monitoring-grid"
 import MonitoringSkeleton from "@/components/monitoring-skeleton";
-import AvgTempPanel from "@/components/dashboard/avgtemp-panel";
 import RoomMonitoringView from "@/components/dashboard/room-monitoring-view";
 const DashboardGrid = lazy(() => import("@/components/dashboard/dashboard-grid"))
 
@@ -28,13 +27,11 @@ export default function Dashboard() {
     queryFn: getAllReadings,
     staleTime: 6000
   });
-  const { addAlert } = useAlertsActions();
   const { setAuth, logout } = useAuthActions();
   const { setRoomData, setRoom } = useRoomActions();
   const { setLED, setRelay, setPiOnline, setDHT } = useControlsActions();
   const setPublish = useSetPublish();
   const user = useUser();
-  const countAlerts = useAlerts().length;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,10 +48,8 @@ export default function Dashboard() {
     mqttClient.on("connect", () => {
       mqttClient.subscribe("pi/dht")
       mqttClient.subscribe("pi/led")
-      mqttClient.subscribe("pi/alert")
       mqttClient.subscribe("pi/relay")
       mqttClient.subscribe("pi/online")
-      mqttClient.publishAsync("client/online", "1")
       console.log("Connected to MQTT broker")
     })
     mqttClient.on("error", (error) => console.error("MQTT connection error:", error))
@@ -64,6 +59,13 @@ export default function Dashboard() {
         case "pi/online": {
           const online = message.toString() === "1";
           setPiOnline(online);
+
+          if (!online) {
+            setLED([]);
+            setRelay([]);
+            setDHT(null);
+          }
+
           break;
         }
 
@@ -102,23 +104,6 @@ export default function Dashboard() {
           setRelay(relays);
           break;
         }
-
-        case "pi/alert": {
-          if (message.length === 0)
-            break;
-          
-          const alertMsg = message.toString().split("|");
-          addAlert({
-            id: countAlerts + 1,
-            type: alertMsg[0],
-            title: alertMsg[1],
-            description: alertMsg[2],
-            time: new Date().toISOString(),
-            room: alertMsg[3]
-          });
-
-          break;
-        }
     
         default: {
           console.log("Unknown topic:", topic);
@@ -126,6 +111,10 @@ export default function Dashboard() {
         }
       }
     })
+
+    return () => {
+      mqttClient.end();
+    }
   }, []);
 
   if (data === 0) {
