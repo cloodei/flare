@@ -70,7 +70,7 @@ export default function RoomMonitoringView() {
 
       const hourlyData = Object.entries(groupedByHour)
         .map(([hourKey, { temps, humids }]) => ({
-          time: new Date(hourKey).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date(hourKey),
           temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
           humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
         }))
@@ -96,7 +96,7 @@ export default function RoomMonitoringView() {
 
     const dailyData = Object.entries(groupedByDay)
       .map(([day, { temps, humids }]) => ({
-        time: new Date(day).toLocaleDateString([], { month: "short", day: "numeric" }),
+        time: new Date(day),
         humidity: parseFloat(((humids.reduce((a, b) => a + b, 0) / humids.length) || 0).toFixed(1)),
         temperature: parseFloat(((temps.reduce((a, b) => a + b, 0) / temps.length) || 0).toFixed(1))
       }))
@@ -104,7 +104,7 @@ export default function RoomMonitoringView() {
     return { chartData: dailyData, timeFormat: "day" }
   }, [activeFilters.timeRange, dateRange, data])
 
-  const CustomTick = ({ x, y, payload, timeFormat }: any) => {
+  const CustomTick = ({ x, y, payload, timeFormat }: any) => { // eslint-disable-line
     if (!payload || !payload.value)
       return null
 
@@ -234,7 +234,7 @@ export default function RoomMonitoringView() {
                 if (timeFormat === "day")
                   return new Date(value).toLocaleDateString([], { month: "short", day: "numeric" })
 
-                if (chartData.length < 18 && index % 3 !== 0)
+                if (chartData.length > 12 && index % 3 !== 0)
                   return ""
 
                 return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })

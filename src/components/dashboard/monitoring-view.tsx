@@ -128,7 +128,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
     return { chartData: dailyData, timeFormat: "day" }
   }, [activeFilters.timeRange, dateRange, data])
 
-  const CustomTick = ({ x, y, payload, timeFormat }: any) => {
+  const CustomTick = ({ x, y, payload, timeFormat }: any) => { // eslint-disable-line
     if (!payload || !payload.value)
       return null
 
@@ -162,10 +162,10 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
         : label.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         
       return (
-          <div className="bg-popover border rounded-lg p-3 shadow-lg">
-            <p className="text-sm text-popover-foreground/80 mb-2">{label}</p>
-            {payload.map((pld, index) => (
-              <div key={index} className="text-sm font-semibold flex items-center gap-2">
+        <div className="bg-popover border rounded-lg p-3 shadow-lg">
+          <p className="text-sm text-popover-foreground/80 mb-2">{label}</p>
+          {payload.map((pld, index) => (
+            <div key={index} className="text-sm font-semibold flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: pld.color }} />
               <span style={{ color: pld.color }}>
                 {pld.name}: {pld.value}
@@ -258,7 +258,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
                 if (timeFormat === "day")
                   return new Date(value).toLocaleDateString([], { month: "short", day: "numeric" })
 
-                if (chartData.length < 18 && index % 3 !== 0)
+                if (chartData.length > 12 && index % 3 !== 0)
                   return ""
 
                 return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
