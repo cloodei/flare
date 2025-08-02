@@ -121,7 +121,7 @@ export default function RoomMonitoringView() {
     const timeString = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     const dateString = date.toLocaleDateString([], { month: "short", day: "numeric" })
 
-    if (chartData.length > 18 && payload.index % 3 !== 0)
+    if (payload.index % 3 !== 0)
       return null
 
     return (
@@ -229,6 +229,12 @@ export default function RoomMonitoringView() {
               tickLine={false}
               axisLine={false}
               tick={<CustomTick timeFormat={timeFormat} />}
+              tickFormatter={(value) => {
+                if (timeFormat === "day")
+                  return value
+
+                return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              }}
             />
             <YAxis
               fontSize={12}

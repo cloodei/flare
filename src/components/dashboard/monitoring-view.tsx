@@ -131,26 +131,24 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
   const CustomTick = ({ x, y, payload, timeFormat }: any) => {
     if (!payload || !payload.value)
       return null
-  
+
+    const offset = (timeFormat === "day") ? -4 : 12
     const date = new Date(payload.value)
     if (timeFormat === "day")
       return (
-        <g transform={`translate(${x},${y})`}>
+        <g transform={`translate(${x},${y + offset})`}>
           <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={12}>
             {date.toLocaleDateString([], { month: "short", day: "numeric" })}
           </text>
         </g>
       )
-  
+
     const timeString = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     const dateString = date.toLocaleDateString([], { month: "short", day: "numeric" })
-  
-    if (chartData.length > 18 && payload.index % 3 !== 0)
-      return null
 
     return (
-      <g transform={`translate(${x},${y})`}>
-        <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={12}>
+      <g transform={`translate(${x},${y + offset})`}>
+        <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={11}>
           <tspan x="0" dy="0em">{timeString}</tspan>
           <tspan x="0" dy="1.2em">{dateString}</tspan>
         </text>
@@ -160,11 +158,15 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
+      label = (timeFormat === "day")
+        ? label.toLocaleDateString([], { month: "short", day: "numeric" })
+        : label.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        
       return (
-        <div className="bg-popover border rounded-lg p-3 shadow-lg">
-          <p className="text-sm text-popover-foreground/80 mb-2">{label}</p>
-          {payload.map((pld, index) => (
-            <div key={index} className="text-sm font-semibold flex items-center gap-2">
+          <div className="bg-popover border rounded-lg p-3 shadow-lg">
+            <p className="text-sm text-popover-foreground/80 mb-2">{label}</p>
+            {payload.map((pld, index) => (
+              <div key={index} className="text-sm font-semibold flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: pld.color }} />
               <span style={{ color: pld.color }}>
                 {pld.name}: {pld.value}
@@ -253,6 +255,15 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
               tickLine={false}
               axisLine={false}
               tick={<CustomTick timeFormat={timeFormat} />}
+              tickFormatter={(value, index) => {
+                if (timeFormat === "day")
+                  return new Date(value).toLocaleDateString([], { month: "short", day: "numeric" })
+
+                if (chartData.length < 18 && index % 3 !== 0)
+                  return ""
+
+                return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              }}
             />
             <YAxis
               fontSize={12}
@@ -261,7 +272,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
               tick={{ fill: "oklch(from var(--muted-foreground) l c h)" }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: "14px", color: "oklch(from var(--foreground) l c h)" }} />
+            <Legend wrapperStyle={{ fontSize: "14px", color: "oklch(from var(--foreground) l c h)", bottom: "0" }} />
 
             {["both", "humidity"].includes(activeFilters.dataType) && (
               <Area

@@ -159,7 +159,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <div className="container mx-auto px-4 py-8 space-y-8 relative">
+      <div className="container mx-auto px-4 py-8 space-y-8 relative max-sm:mt-7">
         <Tabs defaultValue="monitoring" className="space-y-8">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-2">
