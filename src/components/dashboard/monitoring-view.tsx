@@ -132,11 +132,10 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
     if (!payload || !payload.value)
       return null
 
-    const offset = (timeFormat === "day") ? -4 : 12
     const date = new Date(payload.value)
     if (timeFormat === "day")
       return (
-        <g transform={`translate(${x},${y + offset})`}>
+        <g transform={`translate(${x},${y - 4})`}>
           <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={12}>
             {date.toLocaleDateString([], { month: "short", day: "numeric" })}
           </text>
@@ -147,7 +146,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
     const dateString = date.toLocaleDateString([], { month: "short", day: "numeric" })
 
     return (
-      <g transform={`translate(${x},${y + offset})`}>
+      <g transform={`translate(${x},${y + 12})`}>
         <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={11}>
           <tspan x="0" dy="0em">{timeString}</tspan>
           <tspan x="0" dy="1.2em">{dateString}</tspan>
@@ -272,7 +271,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
               tick={{ fill: "oklch(from var(--muted-foreground) l c h)" }}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: "14px", color: "oklch(from var(--foreground) l c h)", bottom: "0" }} />
+            <Legend wrapperStyle={{ fontSize: "14px", color: "oklch(from var(--foreground) l c h)", bottom: 0 }} />
 
             {["both", "humidity"].includes(activeFilters.dataType) && (
               <Area
