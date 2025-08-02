@@ -1,7 +1,7 @@
 import { motion } from "motion/react"
 import { useState, useMemo } from "react"
 import { type DateRange } from "react-day-picker"
-import { type NameType, type ValueType } from "recharts/types/component/DefaultTooltipContent"
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
 import { CalendarRange, Clock3, History, Thermometer, Droplets } from "lucide-react"
 import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, type TooltipProps } from "recharts"
 import { Card } from "../ui/card"
