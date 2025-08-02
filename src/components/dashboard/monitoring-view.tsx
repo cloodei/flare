@@ -1,16 +1,14 @@
-import { useState, useMemo } from "react"
 import { motion } from "motion/react"
 import { type DateRange } from "react-day-picker"
+import { useState, useMemo } from "react"
 import { CalendarRange, Clock3, History, Thermometer, Droplets } from "lucide-react"
+import { type NameType, type ValueType } from "recharts/types/component/DefaultTooltipContent"
 import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, type TooltipProps } from "recharts"
 import { Card } from "../ui/card"
 import { Button } from "../ui/button"
 import { DatePicker } from "../ui/date-picker"
-import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
 import { useAvgActions } from "@/stores/avg-store"
-import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
-
-const time = new Date()
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
 
 interface MonitoringViewProps {
   data: {
@@ -35,18 +33,18 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
       toDate = dateRange?.to
     }
     else {
-      toDate = new Date(time)
-      fromDate = new Date(time)
+      toDate = new Date()
+      fromDate = new Date()
 
       switch (activeFilters.timeRange) {
         case "30d":
-          fromDate.setDate(time.getDate() - 30)
+          fromDate.setDate(toDate.getDate() - 30)
           break;
         case "7d":
-          fromDate.setDate(time.getDate() - 7)
+          fromDate.setDate(toDate.getDate() - 7)
           break;
         case "24h":
-          fromDate.setHours(time.getHours() - 24)
+          fromDate.setHours(toDate.getHours() - 24)
           break;
       }
     }
@@ -87,11 +85,10 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
 
       const hourlyData = Object.entries(groupedByHour)
         .map(([hourKey, { temps, humids }]) => ({
-          time: new Date(hourKey).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          time: new Date(hourKey),
           temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
           humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
         }))
-        // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
       return {
         chartData: hourlyData,
@@ -99,7 +96,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
       }
     }
 
-    const groupedByDay: { [key: string]: { temps: number[]; humids: number[]; count: number } } = {}
+    const groupedByDay: { [key: string]: { temps: number[]; humids: number[] } } = {}
     const n = filteredData.length
     let avgTemp = 0, avgHumidity = 0
 
@@ -110,7 +107,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
 
       const day = item.time.toISOString().split("T")[0]
       if (!groupedByDay[day])
-        groupedByDay[day] = { temps: [], humids: [], count: 0 }
+        groupedByDay[day] = { temps: [], humids: [] }
       
       groupedByDay[day].temps.push(item.temperature)
       groupedByDay[day].humids.push(item.humidity)
@@ -123,14 +120,43 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
 
     const dailyData = Object.entries(groupedByDay)
       .map(([day, { temps, humids }]) => ({
-        time: new Date(day).toLocaleDateString([], { month: "short", day: "numeric" }),
+        time: new Date(day),
         temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
         humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
       }))
-      // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
     return { chartData: dailyData, timeFormat: "day" }
   }, [activeFilters.timeRange, dateRange, data])
+
+  const CustomTick = ({ x, y, payload, timeFormat }: any) => {
+    if (!payload || !payload.value)
+      return null
+  
+    const date = new Date(payload.value)
+    if (timeFormat === "day")
+      return (
+        <g transform={`translate(${x},${y})`}>
+          <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={12}>
+            {date.toLocaleDateString([], { month: "short", day: "numeric" })}
+          </text>
+        </g>
+      )
+  
+    const timeString = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const dateString = date.toLocaleDateString([], { month: "short", day: "numeric" })
+  
+    if (chartData.length > 18 && payload.index % 3 !== 0)
+      return null
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={12}>
+          <tspan x="0" dy="0em">{timeString}</tspan>
+          <tspan x="0" dy="1.2em">{dateString}</tspan>
+        </text>
+      </g>
+    )
+  }
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
@@ -177,22 +203,22 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
 
         <div className="flex items-center gap-3">
           {[
-            { key: "24h" as const, icon: Clock3, label: "24h" },
-            { key: "7d" as const, icon: History, label: "7d" },
-            { key: "30d" as const, icon: CalendarRange, label: "30d" },
-          ].map(({ key, icon: Icon, label }) => (
+            { timeRange: "24h" as const, Icon: Clock3 },
+            { timeRange: "7d" as const, Icon: History },
+            { timeRange: "30d" as const, Icon: CalendarRange },
+          ].map(({ timeRange, Icon }, i) => (
             <Button
-              key={key}
+              key={i}
               size="sm"
-              variant={activeFilters.timeRange === key ? "default" : "secondary"}
+              variant={activeFilters.timeRange === timeRange ? "default" : "secondary"}
               onClick={() => {
-                setActiveFilters((prev) => ({ ...prev, timeRange: key }))
+                setActiveFilters((prev) => ({ ...prev, timeRange }))
                 setDateRange({ from: undefined, to: undefined })
-                setTime(key)
+                setTime(timeRange)
               }}
             >
               <Icon className="size-4 mr-1" />
-              {label}
+              {timeRange}
             </Button>
           ))}
           <DatePicker
@@ -226,13 +252,7 @@ export default function MonitoringView({ data }: MonitoringViewProps) {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tick={{ fill: "oklch(from var(--muted-foreground) l c h)" }}
-              tickFormatter={(value, index) => {
-                if (timeFormat === "day")
-                  return value
-
-                return index % 3 === 0 ? value : ""
-              }}
+              tick={<CustomTick timeFormat={timeFormat} />}
             />
             <YAxis
               fontSize={12}

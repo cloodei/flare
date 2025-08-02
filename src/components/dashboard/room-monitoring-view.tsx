@@ -1,16 +1,14 @@
-import { useState, useMemo } from "react"
 import { motion } from "motion/react"
+import { useState, useMemo } from "react"
 import { type DateRange } from "react-day-picker"
+import { type NameType, type ValueType } from "recharts/types/component/DefaultTooltipContent"
 import { CalendarRange, Clock3, History, Thermometer, Droplets } from "lucide-react"
 import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, type TooltipProps } from "recharts"
 import { Card } from "../ui/card"
 import { Button } from "../ui/button"
 import { DatePicker } from "../ui/date-picker"
-import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
 import { useRoomData, useRoom } from "@/stores/room-store"
-import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
-
-const time = new Date()
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs"
 
 export default function RoomMonitoringView() {
   const roomName = useRoom()
@@ -29,18 +27,18 @@ export default function RoomMonitoringView() {
       toDate = dateRange?.to
     }
     else {
-      toDate = new Date(time)
-      fromDate = new Date(time)
+      toDate = new Date()
+      fromDate = new Date()
 
       switch (activeFilters.timeRange) {
         case "30d":
-          fromDate.setDate(time.getDate() - 30)
+          fromDate.setDate(toDate.getDate() - 30)
           break;
         case "7d":
-          fromDate.setDate(time.getDate() - 7)
+          fromDate.setDate(toDate.getDate() - 7)
           break;
         case "24h":
-          fromDate.setHours(time.getHours() - 24)
+          fromDate.setHours(toDate.getHours() - 24)
           break;
       }
     }
@@ -56,7 +54,6 @@ export default function RoomMonitoringView() {
     if (dayDifference < 3) {
       const n = filteredData.length
       const groupedByHour: { [key: string]: { temps: number[]; humids: number[] } } = {}
-      let avgTemp = 0, avgHumidity = 0
       
       for (let i = 0; i < n; ++i) {
         const item = filteredData[i]
@@ -69,9 +66,6 @@ export default function RoomMonitoringView() {
         
         groupedByHour[keyString].temps.push(item.temperature)
         groupedByHour[keyString].humids.push(item.humidity)
-        
-        avgTemp += item.temperature
-        avgHumidity += item.humidity
       }
 
       const hourlyData = Object.entries(groupedByHour)
@@ -80,7 +74,6 @@ export default function RoomMonitoringView() {
           temperature: parseFloat((temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1)),
           humidity: parseFloat((humids.reduce((a, b) => a + b, 0) / humids.length).toFixed(1)),
         }))
-        // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
       return {
         chartData: hourlyData,
@@ -88,14 +81,14 @@ export default function RoomMonitoringView() {
       }
     }
 
-    const groupedByDay: { [key: string]: { temps: number[]; humids: number[]; count: number } } = {}, n = filteredData.length
+    const groupedByDay: { [key: string]: { temps: number[]; humids: number[] } } = {}, n = filteredData.length
 
     for (let i = 0; i < n; ++i) {
       const item = filteredData[i]
 
       const day = item.time.toISOString().split("T")[0]
       if (!groupedByDay[day])
-        groupedByDay[day] = { temps: [], humids: [], count: 0 }
+        groupedByDay[day] = { temps: [], humids: [] }
       
       groupedByDay[day].temps.push(item.temperature)
       groupedByDay[day].humids.push(item.humidity)
@@ -107,10 +100,39 @@ export default function RoomMonitoringView() {
         humidity: parseFloat(((humids.reduce((a, b) => a + b, 0) / humids.length) || 0).toFixed(1)),
         temperature: parseFloat(((temps.reduce((a, b) => a + b, 0) / temps.length) || 0).toFixed(1))
       }))
-      // .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
 
     return { chartData: dailyData, timeFormat: "day" }
   }, [activeFilters.timeRange, dateRange, data])
+
+  const CustomTick = ({ x, y, payload, timeFormat }: any) => {
+    if (!payload || !payload.value)
+      return null
+
+    const date = new Date(payload.value)
+    if (timeFormat === "day")
+      return (
+        <g transform={`translate(${x},${y})`}>
+          <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={12}>
+            {date.toLocaleDateString([], { month: "short", day: "numeric" })}
+          </text>
+        </g>
+      )
+
+    const timeString = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    const dateString = date.toLocaleDateString([], { month: "short", day: "numeric" })
+
+    if (chartData.length > 18 && payload.index % 3 !== 0)
+      return null
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text x={0} y={0} dy={16} textAnchor="middle" fill="oklch(from var(--muted-foreground) l c h)" fontSize={12}>
+          <tspan x="0" dy="0em">{timeString}</tspan>
+          <tspan x="0" dy="1.2em">{dateString}</tspan>
+        </text>
+      </g>
+    )
+  }
 
   const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (active && payload && payload.length) {
@@ -140,7 +162,6 @@ export default function RoomMonitoringView() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
-      {/* Filter Controls */}
       <div className="flex flex-wrap items-center justify-between gap-6">
         <Tabs defaultValue="both" onValueChange={(value) => setActiveFilters((prev) => ({ ...prev, dataType: value }))}>
           <TabsList className="px-1.5 border dark:border-gray-800 border-gray-400/50">
@@ -158,26 +179,26 @@ export default function RoomMonitoringView() {
 
         <div className="flex items-center gap-3">
           {[
-            { key: "24h" as const, icon: Clock3, label: "24h" },
-            { key: "7d" as const, icon: History, label: "7d" },
-            { key: "30d" as const, icon: CalendarRange, label: "30d" },
-          ].map(({ key, icon: Icon, label }) => (
+            { timeRange: "24h", Icon: Clock3 },
+            { timeRange: "7d", Icon: History },
+            { timeRange: "30d", Icon: CalendarRange },
+          ].map(({ timeRange, Icon }, i) => (
             <Button
-              key={key}
+              key={i}
               size="sm"
-              variant={activeFilters.timeRange === key ? "default" : "secondary"}
+              variant={activeFilters.timeRange === timeRange ? "default" : "secondary"}
               onClick={() => {
-                setActiveFilters((prev) => ({ ...prev, timeRange: key }))
+                setActiveFilters((prev) => ({ ...prev, timeRange }))
                 setDateRange({ from: undefined, to: undefined })
               }}
             >
               <Icon className="size-4 mr-1" />
-              {label}
+              {timeRange}
             </Button>
           ))}
           <DatePicker
             value={dateRange}
-            onChange={(value) => {
+            onChange={value => {
               const from = value?.from, to = value?.to
               setActiveFilters((prev) => ({ ...prev, timeRange: "custom" }))
               setDateRange({ from, to })
@@ -186,7 +207,6 @@ export default function RoomMonitoringView() {
         </div>
       </div>
 
-      {/* Chart */}
       <Card className="pt-2.5 pr-4 md:pt-3.5 md:pr-10">
         <h2 className="pl-4 text-2xl font-semibold capitalize">{roomName}</h2>
 
@@ -208,13 +228,7 @@ export default function RoomMonitoringView() {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tick={{ fill: "oklch(from var(--muted-foreground) l c h)" }}
-              tickFormatter={(value, index) => {
-                if (timeFormat === "day")
-                  return value
-                
-                return index % 3 === 0 ? value : ""
-              }}
+              tick={<CustomTick timeFormat={timeFormat} />}
             />
             <YAxis
               fontSize={12}
